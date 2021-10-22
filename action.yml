@@ -1,26 +1,16 @@
 name: 'Comment a pull request'
-# Here we define the inputs, which can be set
-# from the workflow file and are consumed in our code
 inputs:
   comment:
     description: 'The comment to add'
     required: true
   update:
     description: 'Update previous comment'
-    required: true
-    default: 'false'
-  # Remember we used ain input which was not defined in the
-  # workflow file? It's because the default is already
-  # fine for us, so no need to change it.
-  # As described above, the github token is a token to
-  # interact with the GitHub REST API and is created for
-  # you from GitHub automatically.
+    required: false
+    default: false
   token:
     description: 'GitHub token'
     default: $
     required: true
-# We specify the created dist/index.js file
-# as the entrypoint of our action
 runs:
   using: 'node12'
   main: 'dist/index.js'
