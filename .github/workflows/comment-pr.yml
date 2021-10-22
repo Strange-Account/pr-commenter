@@ -15,4 +15,3 @@ jobs:
         uses: ./
         with:
           comment: "An example comment"
-          token: ${{ secrets.GITHUB_TOKEN }}
