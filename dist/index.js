@@ -1,7 +1,7 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ 3109:
+/***/ 1667:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
@@ -35,44 +35,56 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.run = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 function run() {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        if (github.context.eventName !== "pull_request") {
-            core.setFailed("Can only run on pull requests!");
+        const token = core.getInput("token", { required: true });
+        const commentText = core.getInput("comment", { required: true });
+        const update = !!core.getInput("update", { required: false });
+        const repo = getRepo();
+        if (!repo) {
+            console.log("Could not get repo from context, exiting");
             return;
         }
-        const githubToken = core.getInput("token");
-        const commentText = core.getInput("comment");
-        const update = core.getInput("update");
-        const context = github.context;
-        const repo = context.repo;
-        const pullRequestNumber = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a.number;
-        if (!pullRequestNumber) {
-            core.setFailed("Cannot get pull request number!");
+        const prNumber = getPrNumber();
+        if (!prNumber) {
+            console.log("Could not get pull request number from context, exiting");
             return;
         }
         // Get octokit
-        const octokit = github.getOctokit(githubToken);
+        const octokit = github.getOctokit(token);
         // Get all previous comments
-        const { data: comments } = yield octokit.rest.issues.listComments(Object.assign(Object.assign({}, repo), { issue_number: pullRequestNumber }));
+        const { data: comments } = yield octokit.rest.issues.listComments(Object.assign(Object.assign({}, repo), { issue_number: prNumber }));
         // Check if there is already a comment by us
         const comment = comments.find((comment) => comment.user != null &&
             comment.body != null &&
             comment.user.login === "github-actions[bot]" &&
             comment.body.startsWith("PR-COMMENTER:"));
-        if (comment && update === "true") {
+        if (comment && update) {
             yield octokit.rest.issues.updateComment(Object.assign(Object.assign({}, repo), { comment_id: comment.id, body: commentText }));
         }
         else {
-            yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: pullRequestNumber, body: commentText }));
+            yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, repo), { issue_number: prNumber, body: commentText }));
         }
     });
 }
-// Main method
-run().catch((error) => core.setFailed("Workflow failed!" + error.message));
+exports.run = run;
+function getRepo() {
+    const repo = github.context.repo;
+    if (!repo) {
+        return undefined;
+    }
+    return repo;
+}
+function getPrNumber() {
+    const pullRequest = github.context.payload.pull_request;
+    if (!pullRequest) {
+        return undefined;
+    }
+    return pullRequest.number;
+}
 
 
 /***/ }),
@@ -8515,12 +8527,18 @@ module.exports = require("zlib");
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(3109);
-/******/ 	module.exports = __webpack_exports__;
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+var exports = __webpack_exports__;
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const comment_1 = __nccwpck_require__(1667);
+(0, comment_1.run)();
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;
